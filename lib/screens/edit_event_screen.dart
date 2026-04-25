@@ -1,7 +1,7 @@
-﻿import 'package:event_reminder_app/models/event.dart';
-import 'package:event_reminder_app/services/event_storage_service.dart';
-import 'package:event_reminder_app/services/notification_services.dart';
-import 'package:event_reminder_app/widgets/bottom_nav_bar.dart';
+import 'package:eventora_planner/models/event.dart';
+import 'package:eventora_planner/services/event_storage_service.dart';
+import 'package:eventora_planner/services/notification_services.dart';
+import 'package:eventora_planner/widgets/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -140,7 +140,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
         await scheduleNotification(
           id: notificationId,
           title: title,
-          body: 'ðŸ“ $location\nðŸ“ $description',
+          body: 'Location: $location\nNotes: $description',
           scheduledDateTime: combinedDateTime,
         );
       }

@@ -1,10 +1,10 @@
-﻿import 'package:event_reminder_app/models/event.dart';
-import 'package:event_reminder_app/providers/user_provider.dart';
-import 'package:event_reminder_app/screens/create_event_screen.dart';
-import 'package:event_reminder_app/services/event_storage_service.dart';
-import 'package:event_reminder_app/services/notification_services.dart';
-import 'package:event_reminder_app/widgets/bottom_nav_bar.dart';
-import 'package:event_reminder_app/widgets/build_event_card.dart';
+import 'package:eventora_planner/models/event.dart';
+import 'package:eventora_planner/providers/user_provider.dart';
+import 'package:eventora_planner/screens/create_event_screen.dart';
+import 'package:eventora_planner/services/event_storage_service.dart';
+import 'package:eventora_planner/services/notification_services.dart';
+import 'package:eventora_planner/widgets/bottom_nav_bar.dart';
+import 'package:eventora_planner/widgets/build_event_card.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -69,7 +69,7 @@ class _UpcomingEventScreenWidgetState
           await scheduleNotification(
             id: event.notificationId!,
             title: event.title,
-            body: 'ðŸ“ ${event.location}\nðŸ“ ${event.description}',
+            body: 'Location: ${event.location}\nNotes: ${event.description}',
             scheduledDateTime: combinedDateTime,
           );
         }
@@ -131,7 +131,7 @@ class _UpcomingEventScreenWidgetState
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
-        title: Text('Hello, ${user?.name ?? 'there'}! ðŸ‘‹'),
+        title: Text('Hello, ${user?.name ?? 'there'}!'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

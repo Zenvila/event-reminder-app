@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "470058460441",
-    "project_id": "event-reminder-app-e3b42",
-    "storage_bucket": "event-reminder-app-e3b42.firebasestorage.app"
+    "project_number": "796665190448",
+    "project_id": "eventora-planner",
+    "storage_bucket": "eventora-planner.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:470058460441:android:db70261f43be2f2998d188",
+        "mobilesdk_app_id": "1:796665190448:android:b366f3c3148bcf91b335f5",
         "android_client_info": {
-          "package_name": "com.example.event_reminder_app"
+          "package_name": "com.example.eventora_planner"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "796665190448-7qo7rbhjmu7qrl7recj76rdcdrcd2v5k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.eventora_planner",
+            "certificate_hash": "cb19d7f1a247e8522635402aba66019f98aa90aa"
+          }
+        },
+        {
+          "client_id": "796665190448-fc6eo327khb2hrqgs2v50t8tgqor56ld.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDMGDBDN9eMtogjC6tfxgFaFe8iWHKLz5g"
+          "current_key": "AIzaSyDALDGx98KowQ744n85MSZBwd788ibPJqQ"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "796665190448-fc6eo327khb2hrqgs2v50t8tgqor56ld.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -1,8 +1,8 @@
-import 'package:event_reminder_app/models/event.dart';
-import 'package:event_reminder_app/services/event_storage_service.dart';
-import 'package:event_reminder_app/widgets/bottom_nav_bar.dart';
-import 'package:event_reminder_app/widgets/appbar.dart';
-import 'package:event_reminder_app/widgets/build_event_card.dart';
+import 'package:eventora_planner/models/event.dart';
+import 'package:eventora_planner/services/event_storage_service.dart';
+import 'package:eventora_planner/widgets/bottom_nav_bar.dart';
+import 'package:eventora_planner/widgets/appbar.dart';
+import 'package:eventora_planner/widgets/build_event_card.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -152,7 +152,7 @@ class _CalenderScreen extends State<Calenderscreen>
                   blurRadius: 5,
                   color: Theme.of(context)
                       .shadowColor
-                      .withOpacity(0.12),
+                      .withValues(alpha: 0.12),
                   offset: const Offset(0, 1),
                 ),
               ],
@@ -175,7 +175,7 @@ class _CalenderScreen extends State<Calenderscreen>
                 todayDecoration: BoxDecoration(
                   color: Theme.of(context)
                       .primaryColor
-                      .withOpacity(0.5),
+                      .withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 selectedDecoration: BoxDecoration(

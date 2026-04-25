@@ -1,7 +1,8 @@
-﻿import 'package:event_reminder_app/models/event.dart';
-import 'package:event_reminder_app/services/event_storage_service.dart';
-import 'package:event_reminder_app/services/notification_services.dart';
-import 'package:event_reminder_app/widgets/bottom_nav_bar.dart';
+import 'package:eventora_planner/models/event.dart';
+import 'package:eventora_planner/services/event_storage_service.dart';
+import 'package:eventora_planner/services/gemini_event_parser_service.dart';
+import 'package:eventora_planner/services/notification_services.dart';
+import 'package:eventora_planner/widgets/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -15,12 +16,26 @@ class CreateEventScreen extends StatefulWidget {
 
 class _CreateEventScreenState extends State<CreateEventScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _aiPromptController = TextEditingController();
   String title = '';
   String location = '';
   String description = '';
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   bool notificationEnabled = false;
+  bool _isAiLoading = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _locationController.dispose();
+    _descriptionController.dispose();
+    _aiPromptController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -56,6 +71,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
 
     _formKey.currentState!.save();
+    title = _titleController.text.trim();
+    location = _locationController.text.trim();
+    description = _descriptionController.text.trim();
 
     final combinedDateTime = DateTime(
       selectedDate!.year, selectedDate!.month, selectedDate!.day,
@@ -94,7 +112,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       await scheduleNotification(
         id: notificationId,
         title: title,
-        body: 'ðŸ“ $location\nðŸ“ $description',
+        body: 'Location: $location\nNotes: $description',
         scheduledDateTime: combinedDateTime,
       );
     }
@@ -104,6 +122,51 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         const SnackBar(content: Text('Event created successfully!')),
       );
       Navigator.pop(context);
+    }
+  }
+
+  Future<void> _generateFromAi() async {
+    if (_isAiLoading) return;
+
+    FocusScope.of(context).unfocus();
+    setState(() => _isAiLoading = true);
+
+    try {
+      final draft = await GeminiEventParserService.parseEventText(
+        _aiPromptController.text,
+      );
+      if (!mounted) return;
+      setState(() {
+        _titleController.text = draft.title;
+        _locationController.text = draft.location;
+        _descriptionController.text = draft.description;
+        selectedDate = draft.date;
+        selectedTime = draft.time;
+        notificationEnabled = draft.notificationEnabled;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('AI suggestion applied. Please review before saving.'),
+        ),
+      );
+    } on FormatException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not generate event right now. You can still fill manually.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isAiLoading = false);
+      }
     }
   }
 
@@ -118,8 +181,40 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              TextFormField(
+                controller: _aiPromptController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Describe with AI',
+                  hintText:
+                      'e.g. Meeting with Sir Ali tomorrow at 6 PM in Lab 2',
+                  prefixIcon: const Icon(Icons.auto_awesome),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isAiLoading ? null : _generateFromAi,
+                  icon: _isAiLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.psychology_alt_outlined),
+                  label: Text(_isAiLoading
+                      ? 'Generating...'
+                      : 'Generate Event with Gemini'),
+                ),
+              ),
+              const SizedBox(height: 18),
               // Title
               TextFormField(
+                controller: _titleController,
                 decoration: InputDecoration(
                   labelText: 'Event Title *',
                   prefixIcon: const Icon(Icons.title),
@@ -128,22 +223,24 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
                 validator: (v) => v == null || v.isEmpty
                     ? 'Title is required' : null,
-                onSaved: (v) => title = v ?? '',
+                onSaved: (v) => title = (v ?? '').trim(),
               ),
               const SizedBox(height: 16),
               // Location
               TextFormField(
+                controller: _locationController,
                 decoration: InputDecoration(
                   labelText: 'Location',
                   prefixIcon: const Icon(Icons.location_on),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                onSaved: (v) => location = v ?? '',
+                onSaved: (v) => location = (v ?? '').trim(),
               ),
               const SizedBox(height: 16),
               // Description
               TextFormField(
+                controller: _descriptionController,
                 decoration: InputDecoration(
                   labelText: 'Description',
                   prefixIcon: const Icon(Icons.description),
@@ -151,7 +248,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 maxLines: 3,
-                onSaved: (v) => description = v ?? '',
+                onSaved: (v) => description = (v ?? '').trim(),
               ),
               const SizedBox(height: 16),
               // Date picker

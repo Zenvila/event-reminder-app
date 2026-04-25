@@ -1,4 +1,4 @@
-# \# 📅 Event Reminder App
+# \# 📅 Eventora Planner
 
 # 
 
@@ -440,7 +440,7 @@
 
 # 
 
-# \- Notifications may not fire if battery optimization is enabled for the app. Go to Settings → Apps → Event Reminder → Battery → Unrestricted to fix this.
+# \- Notifications may not fire if battery optimization is enabled for the app. Go to Settings → Apps → Eventora → Battery → Unrestricted to fix this.
 
 # \- The app currently supports Android only. iOS support is planned.
 
@@ -512,7 +512,6 @@
 
 # \- \[pub.dev](https://pub.dev) — Dart package repository
 
-# \- Original project structure inspired by \[AskariSyed](https://github.com/AskariSyed/Event-Reminder-App)
 
 # 
 
@@ -524,3 +523,62 @@
 
 # 
 
+
+# \\---
+#
+# \\## ✅ Cross-platform compatibility (simple)
+#
+# This app now runs safely on Android, iOS, and Web with graceful fallback behavior:
+#
+# \- If Firebase is configured on the platform, cloud features work (Google sign-in, Firestore profile/events, Gemini AI).
+# \- If Firebase is not configured on the platform, the app still opens and local/offline flow continues.
+#
+# \\### iOS (Swift/Xcode) quick setup
+#
+# 1\. Add your iOS app in Firebase Console with bundle ID.
+# 2\. Download `GoogleService-Info.plist`.
+# 3\. Place it in `ios/Runner/GoogleService-Info.plist` using Xcode.
+# 4\. Run:
+#
+# ```bash
+# flutter run -d ios
+# ```
+#
+# \\### Web quick setup
+#
+# 1\. Add Web app in Firebase Console.
+# 2\. Configure Firebase for web (FlutterFire) for your project.
+# 3\. Run:
+#
+# ```bash
+# flutter run -d chrome
+# ```
+#
+# \\### Important note
+#
+# Event data is now user-scoped:
+# \- User A and User B see separate events.
+# \- Events are saved under Firestore `users/{uid}/events/{eventId}`.
+#
+# \\---
+#
+# \\## 📤 How to share app with friends
+#
+# For quick sharing (Android APK):
+#
+# ```bash
+# flutter build apk --release
+# ```
+#
+# Share this file:
+# `build/app/outputs/flutter-apk/app-release.apk`
+#
+# For Play Store:
+#
+# ```bash
+# flutter build appbundle --release
+# ```
+#
+# Upload:
+# `build/app/outputs/bundle/release/app-release.aab`
+#

@@ -1,5 +1,5 @@
-import 'package:event_reminder_app/models/event.dart';
-import 'package:event_reminder_app/screens/edit_event_screen.dart';
+import 'package:eventora_planner/models/event.dart';
+import 'package:eventora_planner/screens/edit_event_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -71,7 +71,7 @@ class BuildEventCard extends StatelessWidget {
         break;
       case 'soon':
         timeColor =
-            Theme.of(context).colorScheme.primary.withOpacity(0.7);
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.7);
         break;
       default:
         timeColor = Theme.of(context).primaryColor;
@@ -85,7 +85,7 @@ class BuildEventCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             blurRadius: 4,
-            color: Theme.of(context).shadowColor.withOpacity(0.1),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
             offset: const Offset(0, 2),
           ),
         ],

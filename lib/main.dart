@@ -1,11 +1,12 @@
-import 'package:event_reminder_app/providers/theme_provider.dart';
-import 'package:event_reminder_app/providers/user_provider.dart';
-import 'package:event_reminder_app/screens/auth_screen.dart';
-import 'package:event_reminder_app/screens/calender_screen.dart';
-import 'package:event_reminder_app/screens/on_boarding_screen.dart';
-import 'package:event_reminder_app/screens/settings.dart';
-import 'package:event_reminder_app/screens/upcoming_events_screen.dart';
-import 'package:event_reminder_app/services/notification_services.dart';
+import 'package:eventora_planner/providers/theme_provider.dart';
+import 'package:eventora_planner/providers/user_provider.dart';
+import 'package:eventora_planner/screens/auth_screen.dart';
+import 'package:eventora_planner/screens/calender_screen.dart';
+import 'package:eventora_planner/screens/on_boarding_screen.dart';
+import 'package:eventora_planner/screens/settings.dart';
+import 'package:eventora_planner/screens/upcoming_events_screen.dart';
+import 'package:eventora_planner/services/firebase_bootstrap.dart';
+import 'package:eventora_planner/services/notification_services.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -15,9 +16,7 @@ import 'package:android_intent_plus/android_intent.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeNotifications();
-  await handlePermissionsFirstTimeOnly();
-
+  await FirebaseBootstrap.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [
@@ -39,7 +38,7 @@ Future<void> handlePermissionsFirstTimeOnly() async {
     if (Platform.isAndroid) {
       final intent = AndroidIntent(
         action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
-        package: 'com.example.event_reminder_app',
+        package: 'com.example.eventora_planner',
       );
       await intent.launch();
     }
@@ -62,6 +61,9 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _initApp();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAppServices();
+    });
   }
 
   Future<void> _initApp() async {
@@ -91,6 +93,16 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  Future<void> _initializeAppServices() async {
+    // Keep startup smooth by rendering UI first, then bootstrapping services.
+    try {
+      await initializeNotifications();
+      await handlePermissionsFirstTimeOnly();
+    } catch (_) {
+      // Keep app usable even if a background setup task fails.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_initialized) {
@@ -105,7 +117,7 @@ class _MyAppState extends State<MyApp> {
       builder: (context, themeProvider, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Event Reminder App',
+          title: 'Eventora Planner',
           theme: ThemeProvider.lightTheme,
           darkTheme: ThemeProvider.darkTheme,
           themeMode: themeProvider.themeMode,

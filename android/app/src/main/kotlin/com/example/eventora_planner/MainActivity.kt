@@ -1,4 +1,4 @@
-package com.example.event_reminder_app
+package com.example.eventora_planner
 
 import io.flutter.embedding.android.FlutterActivity
 

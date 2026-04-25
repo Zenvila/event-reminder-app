@@ -1,8 +1,9 @@
-﻿import 'package:event_reminder_app/providers/theme_provider.dart';
-import 'package:event_reminder_app/providers/user_provider.dart';
-import 'package:event_reminder_app/services/event_storage_service.dart';
-import 'package:event_reminder_app/services/notification_services.dart';
-import 'package:event_reminder_app/widgets/bottom_nav_bar.dart';
+import 'package:eventora_planner/providers/theme_provider.dart';
+import 'package:eventora_planner/providers/user_provider.dart';
+import 'package:eventora_planner/services/auth_service.dart';
+import 'package:eventora_planner/services/event_storage_service.dart';
+import 'package:eventora_planner/services/notification_services.dart';
+import 'package:eventora_planner/widgets/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -60,6 +61,13 @@ class _SettingsPageState extends State<SettingsPage> {
       await prefs.setBool('is_logged_in', false);
       await prefs.remove('user_name');
       await prefs.remove('user_email');
+      if (!mounted) return;
+      try {
+        await AuthService.signOut();
+      } catch (_) {
+        // Ignore sign-out backend errors to avoid blocking local sign-out.
+      }
+      if (!mounted) return;
       context.read<UserProvider>().clearUser();
       await flutterLocalNotificationsPlugin.cancelAll();
       if (mounted) {

@@ -1,7 +1,7 @@
-import 'package:event_reminder_app/screens/settings.dart';
+import 'package:eventora_planner/screens/settings.dart';
 import 'package:flutter/material.dart';
-import 'package:event_reminder_app/screens/calender_screen.dart';
-import 'package:event_reminder_app/screens/upcoming_events_screen.dart';
+import 'package:eventora_planner/screens/calender_screen.dart';
+import 'package:eventora_planner/screens/upcoming_events_screen.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;

@@ -1,6 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -30,7 +30,7 @@ Future<void> scheduleNotification({
     const NotificationDetails(
       android: AndroidNotificationDetails(
         'event_channel',
-        'Event Reminders',
+        'Eventora Alerts',
         channelDescription: 'Notification channel for event reminders',
         importance: Importance.max,
         priority: Priority.high,

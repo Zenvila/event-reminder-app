@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/foundation.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:intl/intl.dart';
 
@@ -40,19 +41,19 @@ class Notification {
         tz.local,
       );
       if (tzScheduledDate.isBefore(tz.TZDateTime.now(tz.local))) {
-        print('Cannot schedule notification for past time: $tzScheduledDate');
+        debugPrint('Cannot schedule notification for past time: $tzScheduledDate');
         return;
       }
 
       await flutterLocalNotificationsPlugin.zonedSchedule(
         int.parse(notificationID),
-        'Event Reminder',
+        'Eventora',
         'Your event $eventID is starting soon!',
         tzScheduledDate,
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'event_reminder_channel',
-            'Event Reminders',
+            'Eventora Alerts',
             channelDescription: 'Notifications for your scheduled events',
             importance: Importance.high,
             priority: Priority.high,
@@ -62,7 +63,7 @@ class Notification {
         matchDateTimeComponents: DateTimeComponents.dateAndTime,
       );
     } catch (e) {
-      print('Error scheduling notification: $e');
+      debugPrint('Error scheduling notification: $e');
     }
   }
 }

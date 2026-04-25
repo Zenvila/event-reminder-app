@@ -1,4 +1,4 @@
-import 'package:event_reminder_app/models/app_user.dart';
+import 'package:eventora_planner/models/app_user.dart';
 import 'package:flutter/material.dart';
 
 class UserProvider with ChangeNotifier {

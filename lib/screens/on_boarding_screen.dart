@@ -1,4 +1,4 @@
-import 'package:event_reminder_app/screens/auth_screen.dart';
+import 'package:eventora_planner/screens/auth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -1,5 +1,5 @@
-name: event_reminder_app
-description: "Event Reminder App - Local Storage Version"
+name: eventora_planner
+description: "Eventora Planner - Local Storage Version"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -23,6 +23,11 @@ dependencies:
   permission_handler: ^12.0.0+1
   timezone: ^0.10.1
   android_intent_plus: ^5.3.0
+  firebase_core: ^3.15.2
+  firebase_ai: ^2.0.0
+  firebase_auth: ^5.7.0
+  cloud_firestore: ^5.6.11
+  google_sign_in: ^6.3.0
 
 dev_dependencies:
   flutter_test:
