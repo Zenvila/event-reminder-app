@@ -1,584 +1,922 @@
-# \# 📅 Eventora Planner
+# Eventora Planner
 
-# 
+Eventora Planner is a Flutter HCI project for event planning and reminders with:
 
-# A beautiful and fully offline Flutter application for managing and scheduling personal events with smart notifications. Built with Flutter and Dart, this app provides a seamless experience for keeping track of your important events without requiring any internet connection or user accounts.
+- Google sign-in
+- per-user Firestore event storage
+- AI-assisted event creation (Firebase AI Logic / Gemini)
+- local notification reminders
+- dark/light theme
 
-# 
+This README is the single clean source of truth for your project.
 
-# \---
+## 1) Project Goal
 
-# 
+Build an event app that is easy to use, visually consistent, and safe for multiple users on shared devices.
 
-# \## ✨ Features
+## 2) Core Features
 
-# 
+- Create, edit, and delete events
+- Event listing: All / Upcoming / Past
+- Calendar view with event markers
+- Notification scheduling
+- Google sign-in
+- Per-user cloud data (`users/{uid}/events/{eventId}`)
+- AI event drafting from natural language
+- Dark mode support
 
-# \- 📝 \*\*Create Events\*\* — Add title, location, description, date and time
+## 3) HCI / UX Rationale (Why this design)
 
-# \- 🔔 \*\*Smart Notifications\*\* — Get reminded before your events automatically
+- **Visibility of status**: snackbars + loading states for async actions
+- **Error prevention**: date/time validation + mounted checks after async calls
+- **Consistency**: reusable UI patterns + provider-based state
+- **Reduced cognitive load**: tabs, calendar markers, AI prompt-to-form filling
+- **User control**: sign-out, edit/delete actions, manual fallback when AI fails
 
-# \- 📅 \*\*Calendar View\*\* — See all your events in monthly or weekly calendar format
+## 4) Architecture
 
-# \- ⏰ \*\*Upcoming Events\*\* — Track all, upcoming, and past events in one place
+- `lib/screens/` -> UI and interactions
+- `lib/services/` -> business logic (auth, storage, AI, notifications)
+- `lib/providers/` -> app state (`UserProvider`, `ThemeProvider`)
+- `lib/models/` -> entities (`Event`, `AppUser`)
 
-# \- ✏️ \*\*Edit and Delete\*\* — Full control over your events anytime
+Data flow:
 
-# \- 🌙 \*\*Dark Mode\*\* — Beautiful dark and light theme support
+1. user action in screen
+2. service call executes
+3. provider state updates
+4. UI rebuilds reactively
 
-# \- 💾 \*\*100% Offline\*\* — All data stored locally on your device, no internet needed
+## 5) Storage Model
 
-# \- 🔒 \*\*Private and Secure\*\* — No accounts, no cloud, no data sharing whatsoever
+### 5.1 Firestore (primary for signed-in users)
 
-# \- 📱 \*\*Clean UI\*\* — Modern Material Design 3 interface
+- `users/{uid}` -> profile data
+- `users/{uid}/events/{eventId}` -> event data
 
-# 
+Benefits:
 
-# \---
+- data survives app cache clear / reinstall
+- user A and user B data stays isolated
 
-# 
+### 5.2 Local fallback
 
-# \## 📱 App Screens
+If Firebase is not available/configured on a platform, app safely falls back to local storage logic so app does not crash.
 
-# 
+## 6) Firebase Setup
 
-# | Screen | Description |
+Required services:
 
-# |--------|-------------|
+- Authentication (Google)
+- Firestore Database
+- Firebase AI Logic (Gemini)
 
-# | Login Screen | Enter your name to get started, no password needed |
+Android setup:
 
-# | Onboarding | Beautiful introduction to app features |
+1. register package `com.example.eventora_planner`
+2. add SHA-1 and SHA-256
+3. place `google-services.json` in `android/app/google-services.json`
 
-# | Upcoming Events | View all, upcoming, and past events in tabs |
+Deploy Firestore rules:
 
-# | Create Event | Add new events with full details and notifications |
+```bash
+firebase use eventora-planner
+firebase deploy --only firestore:rules --project eventora-planner
+```
 
-# | Edit Event | Modify any existing event |
+## 7) Firestore Rules
 
-# | Calendar View | Monthly and weekly calendar with event markers |
+Use per-user rules (already configured in this repo):
 
-# | Settings | Theme toggle, notification controls, sign out |
+```txt
+users/{userId}             -> request.auth.uid must equal userId
+users/{userId}/events/{id} -> request.auth.uid must equal userId
+```
 
-# 
+## 8) Run Commands
 
-# \---
+From project root:
 
-# 
+```bash
+flutter clean
+flutter pub get
+flutter run -d <device-id>
+```
 
-# \## 🚀 Getting Started
+Performance check:
 
-# 
+```bash
+flutter run -d <device-id> --profile
+```
 
-# \### Prerequisites
+## 9) Build / Share
 
-# 
+Release APK (share with friends):
 
-# \- Flutter SDK 3.7.0 or higher
+```bash
+flutter build apk --release
+```
 
-# \- Dart SDK 3.7.0 or higher
+Output:
 
-# \- Android device or emulator running API 21 or higher
+- `build/app/outputs/flutter-apk/app-release.apk`
 
-# \- Android Studio or VS Code with Flutter extension
+Play Store AAB:
 
-# 
+```bash
+flutter build appbundle --release
+```
 
-# \### Installation
+Output:
 
-# 
+- `build/app/outputs/bundle/release/app-release.aab`
 
-# 1\. Clone the repository
+## 10) iOS / Web Notes
 
-# 
+The app is written to be Firebase-safe cross-platform:
 
-# ```bash
+- if Firebase is configured on iOS/Web, cloud features work
+- if Firebase config is missing, app avoids hard crash with fallback behavior
 
-# git clone https://github.com/Haris-Shahzad/event-reminder-app.git
+iOS:
 
-# ```
+- add `GoogleService-Info.plist` in `ios/Runner`
 
-# 
+Web:
 
-# 2\. Navigate to the project folder
+- add Firebase web app and FlutterFire web config
 
-# 
+## 11) Instructor Demo Flow
 
-# ```bash
+1. Google login with account A
+2. Create event manually
+3. Create event using AI prompt
+4. Sign out -> login with account B
+5. Show account isolation (A events not visible in B)
+6. Show Firestore collections (`users`, `users/{uid}/events`)
 
-# cd event-reminder-app
+## 12) Known Dev Notes
 
-# ```
+- Debug mode on some MIUI devices can show frame-skip/perf logs; profile/release is smoother.
+- App Check warnings in dev mode are expected until full App Check setup is enforced.
 
-# 
+## 13) Suggested Repo Name
 
-# 3\. Install all dependencies
+Best repo name:
 
-# 
+- `eventora-planner`
 
-# ```bash
+## 14) License
 
-# flutter pub get
+Educational project use unless you add a custom license file.
 
-# ```
+# Eventora Planner
 
-# 
+Eventora Planner is a Flutter HCI project focused on practical usability:
 
-# 4\. Run the app on your connected device
+- fast event creation
+- clear event visibility (all/upcoming/past/calendar)
+- reminder notifications
+- Google sign-in
+- per-user cloud data isolation
+- AI-assisted event drafting
 
-# 
+This README explains not only **how to run** the app, but also **why** design and architecture choices were made (HCI + UX reasoning).
 
-# ```bash
+## 1) Project Goal
 
-# flutter run
+Build an event planner that is:
 
-# ```
+- easy for first-time users
+- consistent in light and dark mode
+- safe for multi-user usage
+- robust across Android + optional iOS/Web setups
+- explainable in an HCI viva/demo
 
-# 
+## 2) What Problem It Solves
 
-# \### Build Release APK
+Common reminder apps fail in three ways:
 
-# 
+- too many taps to create an event
+- users lose data when switching accounts/devices
+- UI becomes confusing under theme or state changes
 
-# ```bash
+Eventora Planner addresses these with:
 
-# flutter build apk --release
+- simple event forms
+- AI prompt-to-form generation
+- user-scoped cloud storage
+- clear sign-in / sign-out flow
 
-# ```
+## 3) Core Features
 
-# 
+- Create, edit, delete events
+- List filtering: All / Upcoming / Past
+- Calendar view with event markers
+- Notification scheduling
+- Dark mode
+- Google sign-in
+- Firestore-backed user + event data
+- AI event draft generation (Gemini via Firebase AI Logic)
 
-# The APK will be located at:
+## 4) HCI / UX Principles Used
 
-# build/app/outputs/flutter-apk/app-release.apk
+### 4.1 Visibility of System Status
 
-# 
+- Snackbar feedback on important actions (create/update/clear/sign-in errors)
+- Loading indicators for async operations (Google sign-in, AI generation)
 
-# \---
+### 4.2 User Control and Freedom
 
-# 
+- Edit/delete controls on event cards
+- Sign-out always available in Settings
+- AI is assistive, not forced (manual form remains primary fallback)
 
-# \## 🛠️ Tech Stack
+### 4.3 Consistency and Standards
 
-# 
+- Reusable card/button styles
+- predictable route names and navigation
+- dark/light theming through a single provider
 
-# | Technology | Version | Purpose |
+### 4.4 Error Prevention and Recovery
 
-# |------------|---------|---------|
+- date/time validation prevents past scheduling
+- async-mounted checks prevent UI crashes after await
+- Firebase bootstrap fallback prevents hard crash when platform config is missing
 
-# | Flutter | 3.7.0+ | Cross-platform UI framework |
+### 4.5 Recognition Rather Than Recall
 
-# | Dart | 3.7.0+ | Programming language |
+- tabbed lists + calendar markers reduce memory load
+- AI converts natural language into prefilled fields to reduce typing effort
 
-# | Provider | 6.1.5 | State management |
+## 5) Architecture (How It Works)
 
-# | Shared Preferences | 2.5.3 | Local data storage |
+The app follows a simple layered Flutter architecture:
 
-# | Flutter Local Notifications | 19.2.1 | Push notification scheduling |
+- `screens/` UI and user interaction
+- `services/` business logic and external integrations
+- `providers/` app/user/theme state
+- `models/` event and user entities
 
-# | Table Calendar | 3.2.0 | Calendar widget |
+### 5.1 State Management
 
-# | Permission Handler | 12.0.0 | Runtime permissions |
+- `Provider` is used for:
+  - user state
+  - theme state
 
-# | Timezone | 0.10.1 | Accurate notification scheduling |
+### 5.2 Data Flow
 
-# | Google Fonts | Latest | Beautiful typography |
+- UI triggers service methods
+- service reads/writes local/cloud data
+- provider updates state
+- UI rebuilds reactively
 
-# | Android Intent Plus | 5.3.0 | Android system intents |
+## 6) Data Storage Design
 
-# | Badges | 3.1.2 | UI badge components |
+### 6.1 Why Cloud + Local Hybrid
 
-# | Font Awesome Flutter | 10.8.0 | Icon library |
+We use Firestore for logged-in users so data persists after cache clear/reinstall.
+We keep local fallback for scenarios where Firebase is unavailable or user is local/offline.
 
-# 
+### 6.2 Firestore Structure
 
-# \---
+- `users/{uid}`
+  - `uid`, `name`, `email`, `photoUrl`, `createdAt`, `lastLoginAt`
+- `users/{uid}/events/{eventId}`
+  - event fields (`title`, `date`, `time`, `location`, `description`, `notificationEnabled`, ...)
 
-# 
+### 6.3 Multi-User Isolation
 
-# \## 📁 Project Structure
+Events are scoped by Firebase UID:
 
-# lib/
+- account A cannot read account B events
+- sign out/in switches to correct user dataset
 
-# ├── main.dart                       # App entry point and initialization
+## 7) Authentication Design
 
-# ├── firebase\_options.dart           # Placeholder (Firebase removed)
+Google sign-in flow:
 
-# ├── secrets.dart                    # Placeholder (no secrets needed)
+1. user taps "Continue with Google"
+2. Firebase Auth returns user
+3. user profile upserted in Firestore
+4. local session flags updated
+5. app navigates to home
 
-# │
+Sign-out flow:
 
-# ├── models/
+1. local session cleared
+2. Firebase + Google sign-out called
+3. user provider reset
+4. auth screen reopened
 
-# │   ├── event.dart                  # Event data model with JSON serialization
+## 8) AI Integration Design
 
-# │   └── app\_user.dart               # User data model
+AI uses Firebase AI Logic (`firebase_ai`) for structured event draft generation.
 
-# │
+Why this approach:
 
-# ├── providers/
+- avoids deprecated direct SDK usage
+- aligns with Firebase ecosystem
+- easier future production hardening (App Check, Remote Config model control)
 
-# │   ├── theme\_provider.dart         # Theme state management (light/dark)
+AI behavior:
 
-# │   └── user\_provider.dart          # User state management
+- takes natural language input
+- attempts strict JSON extraction
+- validates date/time format
+- rejects invalid or past date drafts
+- falls back with user-friendly errors
 
-# │
+## 9) Cross-Platform Compatibility Strategy
 
-# ├── screens/
+The app includes safe Firebase bootstrap logic:
 
-# │   ├── auth\_screen.dart            # Local login screen (name + email)
+- if Firebase config exists on platform => cloud features enabled
+- if missing => app remains usable with local fallback
 
-# │   ├── on\_boarding\_screen.dart     # App introduction and onboarding
+This prevents hard startup crashes on partially configured targets (iOS/Web during setup).
 
-# │   ├── upcoming\_events\_screen.dart # Main screen with tabbed event list
+## 10) Security
 
-# │   ├── create\_event\_screen.dart    # Form to create new events
+### 10.1 Firestore Rules
 
-# │   ├── edit\_event\_screen.dart      # Form to edit existing events
+Rules are user-scoped:
 
-# │   ├── calender\_screen.dart        # Calendar view with event markers
+- only authenticated user can read/write their own profile/events
 
-# │   └── settings.dart               # Settings page
+### 10.2 App Check
 
-# │
+Recommended for production (Android: Play Integrity).
+During development, warnings may appear if App Check provider is not yet installed.
 
-# ├── services/
+## 11) Setup Guide
 
-# │   ├── event\_storage\_service.dart  # CRUD operations using local storage
+## 11.1 Prerequisites
 
-# │   └── notification\_services.dart  # Notification scheduling and management
+- Flutter SDK installed
+- Android Studio / VS Code Flutter tooling
+- Firebase project configured
 
-# │
+## 11.2 Firebase Required Setup
 
-# └── widgets/
+1. Create/select Firebase project (recommended: `eventora-planner`)
+2. Register Android app:
+  - package: `com.example.eventora_planner`
+3. Add SHA-1 and SHA-256 fingerprints
+4. Download and place:
+  - `android/app/google-services.json`
+5. Enable in Firebase:
+  - Authentication > Google
+  - Firestore Database
+  - Firebase AI Logic
+6. Deploy Firestore rules:
 
-# ├── appbar.dart                 # Custom reusable app bar
+```bash
+firebase use eventora-planner
+firebase deploy --only firestore:rules --project eventora-planner
+```
 
-# ├── bottom\_nav\_bar.dart         # Bottom navigation bar
+## 11.3 Run Commands
 
-# └── build\_event\_card.dart       # Event card widget with actions
+From project root:
 
-# 
+```bash
+flutter clean
+flutter pub get
+flutter run -d <device-id>
+```
 
-# \---
+Performance test:
 
-# 
+```bash
+flutter run -d <device-id> --profile
+```
 
-# \## 🔧 Key Implementation Details
+## 12) Build and Distribution
 
-# 
+### 12.1 Share with Friends (APK)
 
-# \### Local Storage Architecture
+```bash
+flutter build apk --release
+```
 
-# All events are stored locally using `shared\_preferences` as serialized JSON strings. The `EventStorageService` class provides clean CRUD operations:
+Output:
 
-# \- `getEvents()` — Load all events from device storage
+- `build/app/outputs/flutter-apk/app-release.apk`
 
-# \- `addEvent()` — Save a new event
+### 12.2 Play Store (AAB)
 
-# \- `updateEvent()` — Update an existing event
+```bash
+flutter build appbundle --release
+```
 
-# \- `deleteEvent()` — Remove an event by ID
+Output:
 
-# 
+- `build/app/outputs/bundle/release/app-release.aab`
 
-# \### Notification System
+Upload this AAB in Play Console release flow.
 
-# Events use `flutter\_local\_notifications` with timezone-aware scheduling via the `timezone` package. Notifications are:
+## 13) Demo Script (for Instructor)
 
-# \- Scheduled at the exact event date and time
+1. Show login with Google
+2. Create one event manually
+3. Create one event with AI prompt
+4. Switch to dark mode and verify readability
+5. Sign out and sign in with another account
+6. Show account data isolation
+7. Open Firebase Console and show:
+  - users collection
+  - per-user events subcollection
+8. Explain HCI rationale (status feedback, consistency, error prevention, reduced cognitive load)
 
-# \- Cancelled automatically when events are deleted
+## 14) Known Development Notes
 
-# \- Rescheduled when events are edited
+- First debug launch on MIUI/Redmi may show frame-skip/perf logs.
+- Prefer profile/release mode when evaluating perceived performance.
+- Some Google Play services warnings on custom ROMs are non-blocking.
 
-# \- Persisted across app restarts
+## 15) Suggested Repository Name
 
-# 
+Recommended repo name:
 
-# \### Offline First Design
+- `eventora-planner`
 
-# This app is designed to work completely without internet. All data lives on the device. No Firebase, no Google Sign-In, no cloud sync, no API calls.
+Alternative names:
 
-# 
+- `eventora-hci-project`
+- `eventora-ai-reminder`
 
-# \### Theme System
+## 16) License
 
-# Dark and light modes are managed by `ThemeProvider` using Flutter's `ThemeMode`. User preference is persisted across sessions.
+Educational use by default unless you add a formal license file.
 
-# 
+# Eventora Planner
 
-# \---
+Eventora Planner is a Flutter-based event reminder app with:
 
-# 
+- local + cloud-backed event management
+- Google login using Firebase Authentication
+- per-user event storage in Firestore
+- AI-assisted event draft generation using Firebase AI Logic (Gemini)
 
-# \## 📋 How to Use
+This project was prepared as an HCI course project and focuses on practical usability.
 
-# 
+## Key Features
 
-# \### Creating Your First Event
+- Create, edit, and delete events
+- Calendar and upcoming/past event views
+- Local notifications for event reminders
+- Dark mode support
+- Google sign-in support
+- User-isolated data (account A cannot see account B events)
+- AI event generation from natural language prompt
 
-# 1\. Launch the app and enter your name on the login screen
+## Tech Stack
 
-# 2\. Complete the onboarding (first launch only)
+- Flutter / Dart
+- Provider (state management)
+- SharedPreferences (local preferences)
+- Firebase Authentication (Google login)
+- Cloud Firestore (user profile + user events)
+- Firebase AI Logic (Gemini)
+- flutter_local_notifications
 
-# 3\. Tap the \*\*+\*\* floating action button on the home screen
+## Project Identity
 
-# 4\. Fill in the event title (required)
+- App display name: `Eventora Planner`
+- Android package: `com.example.eventora_planner`
+- Firebase project: `eventora-planner`
 
-# 5\. Add location, description (optional)
+## Folder Highlights
 
-# 6\. Pick a date using the date picker
+- `lib/screens/` UI screens
+- `lib/services/` app services (auth, storage, notifications, AI)
+- `lib/providers/` state providers
+- `android/app/google-services.json` Firebase Android config
+- `firestore.rules` Firestore security rules
 
-# 7\. Pick a time using the time picker
+## Setup (Android)
 
-# 8\. Toggle notifications ON if you want a reminder
+1. Install Flutter SDK and Android toolchain.
+2. Clone project.
+3. Add Firebase Android app with package:
+  - `com.example.eventora_planner`
+4. Download `google-services.json` and place in:
+  - `android/app/google-services.json`
+5. Add SHA-1/SHA-256 in Firebase (Project Settings > Your apps).
+6. Enable in Firebase:
+  - Authentication > Google
+  - Firestore Database
+  - Firebase AI Logic (Gemini)
 
-# 9\. Tap \*\*Create Event\*\*
+Then run:
 
-# 
+```bash
+flutter clean
+flutter pub get
+flutter run -d <device-id>
+```
 
-# \### Viewing Events
+## iOS / Web Compatibility Notes
 
-# \- \*\*All tab\*\* — shows every event you have created
+The app now uses safe Firebase bootstrap logic:
 
-# \- \*\*Upcoming tab\*\* — shows future events only
+- If Firebase is configured on a platform, cloud features are used.
+- If Firebase is missing on a platform, app falls back safely instead of hard crashing.
 
-# \- \*\*Past tab\*\* — shows events that have already passed
+For iOS:
 
-# \- \*\*Calendar tab\*\* — tap any date to see events on that day
+- Add Firebase iOS app
+- Place `GoogleService-Info.plist` in `ios/Runner`
 
-# 
+For Web:
 
-# \### Managing Events
+- Add Firebase Web app and configure FlutterFire web options
 
-# \- Tap the \*\*edit icon\*\* on any event card to modify it
+## Firestore Data Model
 
-# \- Tap the \*\*delete icon\*\* to permanently remove an event
+- `users/{uid}`
+  - `uid`
+  - `name`
+  - `email`
+  - `photoUrl`
+  - `createdAt`
+  - `lastLoginAt`
+- `users/{uid}/events/{eventId}`
+  - event fields (`title`, `date`, `time`, `location`, etc.)
 
-# \- Pull down to refresh the events list
+## Security Rules
 
-# 
+Current rules restrict access to owner user:
 
-# \### Settings
+```txt
+users/{userId}               -> only auth userId
+users/{userId}/events/{id}   -> only auth userId
+```
 
-# \- Toggle \*\*Dark Mode\*\* for a darker interface
+Deploy rules:
 
-# \- Toggle \*\*Notifications\*\* to enable or disable all reminders
+```bash
+firebase deploy --only firestore:rules --project eventora-planner
+```
 
-# \- Tap \*\*Clear All Events\*\* to delete everything
+## AI Event Generation
 
-# \- Tap \*\*Sign Out\*\* to return to the login screen
+In Create Event screen:
 
-# 
+1. Enter natural text in "Describe with AI"
+2. Tap "Generate Event with Gemini"
+3. Review generated fields
+4. Save event
 
-# \---
+Example prompt:
 
-# 
+- `Meeting with supervisor tomorrow at 5 PM in Lab 2`
 
-# \## 🤝 Contributing
+## Multi-Account Behavior
 
-# 
+Events are now user-scoped in Firestore and separated by UID.
 
-# Contributions are welcome! Here is how you can help:
+- Signing in with account B does not show account A events.
+- Re-login reloads that account's own events.
 
-# 
+## Build and Share
 
-# 1\. Fork the repository
+### Debug run
 
-# 2\. Create your feature branch
+```bash
+flutter run -d <device-id>
+```
 
-# ```bash
+### Profile run (better performance check)
 
-# git checkout -b feature/your-feature-name
+```bash
+flutter run -d <device-id> --profile
+```
 
-# ```
+### Release APK (share directly with friend)
 
-# 3\. Make your changes and commit
+```bash
+flutter build apk --release
+```
 
-# ```bash
+Output:
 
-# git commit -m "Add your feature description"
+- `build/app/outputs/flutter-apk/app-release.apk`
 
-# ```
+### Play Store AAB
 
-# 4\. Push to your branch
+```bash
+flutter build appbundle --release
+```
 
-# ```bash
+Output:
 
-# git push origin feature/your-feature-name
+- `build/app/outputs/bundle/release/app-release.aab`
 
-# ```
+## Recommended Demo Flow (for Instructor)
 
-# 5\. Open a Pull Request on GitHub
+1. Login with Google account A
+2. Create event manually
+3. Create event with AI prompt
+4. Sign out, login with account B
+5. Show account isolation (A events not visible)
+6. Open Firebase Console and show:
+  - users collection
+  - events subcollection per user
 
-# 
+## Known Notes
 
-# \### Ideas for Contributions
+- First debug launch can show frame-skip logs on MIUI devices; profile/release is smoother.
+- App Check is recommended before production release.
 
-# \- Add event categories and color coding
 
-# \- Add recurring events support
 
-# \- Add event search functionality
+Got you — here’s a clean **.md file content**. Just copy-paste directly into your `README.md` 👇
 
-# \- Add export to calendar feature
+---
 
-# \- Add widget for home screen
+```md
+# 📱 iOS + Web + Device Command Guide
 
-# \- Add iOS support and testing
+This guide explains how to run your Flutter app on **Android, Web, and iOS**, select a specific device, and configure Firebase properly.
 
-# \- Improve accessibility features
+---
 
-# 
+## 🔍 1. List Available Devices
 
-# \---
+First, check all connected devices:
 
-# 
+```bash
+flutter devices
 
-# \## 🐛 Known Issues
+```
 
-# 
+You will see device IDs like:
 
-# \- Notifications may not fire if battery optimization is enabled for the app. Go to Settings → Apps → Eventora → Battery → Unrestricted to fix this.
+- 📱 Android phone → `d42966c9` (example)
+- 🌐 Chrome (Web) → `chrome`
+- 🍎 iOS simulator/device → Only visible on macOS with Xcode
 
-# \- The app currently supports Android only. iOS support is planned.
+---
 
-# 
+## ▶️ 2. Run on a Specific Device
 
-# \---
+Use this command:
 
-# 
+```bash
+flutter run -d <device-id>
 
-# \## 📄 License
+```
 
-# 
+### Examples:
 
-# This project is licensed under the MIT License.
+```bash
+flutter run -d d42966c9
+flutter run -d chrome
 
-# MIT License
+```
 
-# Copyright (c) 2026 Haris Shahzad
+💡 If multiple Android devices are connected, always use the correct device ID from `flutter devices`.
 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
+---
 
-# of this software and associated documentation files (the "Software"), to deal
+## 🤖 3. Android Run Commands
 
-# in the Software without restriction, including without limitation the rights
+From your project root:
 
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+```bash
+flutter clean
+flutter pub get
+flutter run -d d42966c9
 
-# copies of the Software, and to permit persons to whom the Software is
+```
 
-# furnished to do so, subject to the following conditions:
+### ⚡ Profile Mode (Performance Testing)
 
-# The above copyright notice and this permission notice shall be included in all
+```bash
+flutter run -d d42966c9 --profile
 
-# copies or substantial portions of the Software.
+```
 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+### 📦 Build Release APK
 
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+```bash
+flutter build apk --release
 
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+```
 
-# 
+### 📦 Split APKs (Smaller Size)
 
-# \---
+```bash
+flutter build apk --release --split-per-abi
 
-# 
+```
 
-# \## 👨‍💻 Developer
+---
 
-# 
+## 🌐 4. Web Run Commands
 
-# \*\*Haris Shahzad\*\*
+### Enable Web (One-Time Setup)
 
-# 
+```bash
+flutter config --enable-web
 
-# \- GitHub: \[@Haris-Shahzad](https://github.com/Haris-Shahzad)
+```
 
-# 
+### Run on Web
 
-# \---
+```bash
+flutter run -d chrome
 
-# 
+```
 
-# \## 🙏 Acknowledgements
+### Build for Production
 
-# 
+```bash
+flutter build web
 
-# \- \[Flutter](https://flutter.dev) — Amazing cross-platform framework
+```
 
-# \- \[pub.dev](https://pub.dev) — Dart package repository
+📁 Output Folder:
 
+```
+build/web/
 
-# 
+```
 
-# \---
+---
 
-# 
+### ⚠️ Web Firebase Note
 
-# ⭐ If you found this project useful or interesting, please give it a star on GitHub!
+If you see this error:
 
-# 
+```
+FirebaseOptions cannot be null when creating the default app
 
+```
 
-# \\---
-#
-# \\## ✅ Cross-platform compatibility (simple)
-#
-# This app now runs safely on Android, iOS, and Web with graceful fallback behavior:
-#
-# \- If Firebase is configured on the platform, cloud features work (Google sign-in, Firestore profile/events, Gemini AI).
-# \- If Firebase is not configured on the platform, the app still opens and local/offline flow continues.
-#
-# \\### iOS (Swift/Xcode) quick setup
-#
-# 1\. Add your iOS app in Firebase Console with bundle ID.
-# 2\. Download `GoogleService-Info.plist`.
-# 3\. Place it in `ios/Runner/GoogleService-Info.plist` using Xcode.
-# 4\. Run:
-#
-# ```bash
-# flutter run -d ios
-# ```
-#
-# \\### Web quick setup
-#
-# 1\. Add Web app in Firebase Console.
-# 2\. Configure Firebase for web (FlutterFire) for your project.
-# 3\. Run:
-#
-# ```bash
-# flutter run -d chrome
-# ```
-#
-# \\### Important note
-#
-# Event data is now user-scoped:
-# \- User A and User B see separate events.
-# \- Events are saved under Firestore `users/{uid}/events/{eventId}`.
-#
-# \\---
-#
-# \\## 📤 How to share app with friends
-#
-# For quick sharing (Android APK):
-#
-# ```bash
-# flutter build apk --release
-# ```
-#
-# Share this file:
-# `build/app/outputs/flutter-apk/app-release.apk`
-#
-# For Play Store:
-#
-# ```bash
-# flutter build appbundle --release
-# ```
-#
-# Upload:
-# `build/app/outputs/bundle/release/app-release.aab`
-#
+👉 This means Firebase Web config is missing.
+
+- App will still run (safe fallback)
+- But features like:
+  - Google Sign-In
+  - Firestore
+  - AI (Gemini)
+
+❌ Will NOT work until Firebase is configured
+
+---
+
+## 🍎 5. iOS Support (Important)
+
+### 🚫 Reality Check
+
+iOS build requires:
+
+- macOS
+- Xcode
+- CocoaPods
+
+👉 You **cannot run iOS on Linux/Windows**
+
+---
+
+### 🔥 iOS Firebase Setup
+
+1. Open Firebase Console
+2. Add an iOS app (use your bundle ID)
+3. Download `GoogleService-Info.plist`
+4. Place it here:
+
+```
+ios/Runner/GoogleService-Info.plist
+
+```
+
+1. Open in Xcode:
+
+```
+ios/Runner.xcworkspace
+
+```
+
+1. Ensure the file is added to the **Runner target**
+
+---
+
+### ▶️ Run iOS (macOS only)
+
+```bash
+flutter clean
+flutter pub get
+cd ios && pod install && cd ..
+flutter run -d ios
+
+```
+
+### Run on Specific iOS Device
+
+```bash
+flutter devices
+flutter run -d <ios-device-id>
+
+```
+
+### 📦 Build iOS Release
+
+```bash
+flutter build ipa
+
+```
+
+---
+
+## 🔥 6. Firebase Setup Checklist (All Platforms)
+
+Make sure these are enabled in Firebase:
+
+- ✅ Authentication → Google
+- ✅ Firestore Database
+- ✅ Firebase AI Logic (Gemini)
+
+---
+
+### 📁 Required Files
+
+**Android**
+
+```
+android/app/google-services.json
+
+```
+
+**iOS**
+
+```
+ios/Runner/GoogleService-Info.plist
+
+```
+
+**Web**
+
+- Web app registered in Firebase
+- Config added in:
+
+```
+lib/firebase_options.dart
+
+```
+
+---
+
+### 🚀 Deploy Firestore Rules
+
+```bash
+firebase use eventora-planner
+firebase deploy --only firestore:rules --project eventora-planner
+
+```
+
+---
+
+## 🧠 7. What Works Without Full Firebase Setup
+
+Your app uses a **safe Firebase fallback**, so:
+
+- ✅ UI will still run
+- ❌ Cloud features will be disabled
+
+### Disabled Features:
+
+- Authentication
+- Firestore
+- AI features
+
+👉 This prevents crashes during demos 👍
+
+---
+
+## ✅ Summary
+
+- Use `flutter devices` to find device IDs
+- Run apps using `flutter run -d <device-id>`
+- Android & Web work on any system
+- iOS requires macOS + Xcode
+- Firebase must be configured per platform for full functionality
+
+---
+
+```
+
+---
+
+If you want, I can next:
+- Turn this into a **GitHub-level pro README (badges + screenshots + sections)**
+- Or make a **step-by-step setup guide with images (super easy for revision)**
+
+```
+
+## License
+
+Use for educational purposes unless you add your own license policy.
