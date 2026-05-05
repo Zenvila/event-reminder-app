@@ -8,6 +8,10 @@ Eventora Planner is a Flutter HCI project for event planning and reminders with:
 - local notification reminders
 - dark/light theme
 
+
+### App Workflow & UI
+<img src="workflow.jpg" width="600" alt="Event Reminder App UI Workflow">
+
 This README is the single clean source of truth for your project.
 
 ## 1) Project Goal
